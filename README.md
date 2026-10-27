@@ -1,2 +1,2 @@
 # WayoAI
-Ai Trip planner
+Ai Trip planner.
