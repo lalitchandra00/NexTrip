@@ -1,2 +1,2 @@
-# WayoAI
+# NexTrip
 Ai Trip planner.
