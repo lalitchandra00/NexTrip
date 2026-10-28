@@ -1,9 +1,9 @@
-# Bus API utilities (Flixbus)
-
+# Bus API utilities with LangChain tools (Flixbus)
 import os
 import requests
 from typing import Dict, Any, Optional, List
 from dotenv import load_dotenv
+from langchain_core.tools import tool
 
 load_dotenv()
 
@@ -44,19 +44,25 @@ def search_buses_tool(from_location: str, to_location: str, travel_date: str, ad
     bus_api = BusAPI()
     from_stations = bus_api.autocomplete_stations(from_location)
     to_stations = bus_api.autocomplete_stations(to_location)
-    
+
     if not from_stations or not to_stations:
         return {"error": "Could not find bus stations"}
-    
+
     from_id = from_stations[0].get("id") or from_stations[0].get("station_id") or from_stations[0].get("uid")
     to_id = to_stations[0].get("id") or to_stations[0].get("station_id") or to_stations[0].get("uid")
-    
+
     if not from_id or not to_id:
         return {"error": "Could not extract bus station IDs", "from_stations": from_stations, "to_stations": to_stations}
-    
+
     trips = bus_api.search_trips(str(from_id), str(to_id), travel_date, adult)
     return {
         "from_stations": from_stations,
         "to_stations": to_stations,
         "buses": trips
     }
+
+
+@tool
+def search_buses(from_location: str, to_location: str, travel_date: str, adult: int = 1) -> Dict[str, Any]:
+    """Search for bus trips between locations."""
+    return search_buses_tool(from_location, to_location, travel_date, adult)
