@@ -72,8 +72,7 @@ Thumbs.db
 .ruff_cache/
 
 # Project specific
-apis.md
 context.md
-backend/apis.md
 backend/context.md
 backend/.env
+apis.md
