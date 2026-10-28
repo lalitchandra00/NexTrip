@@ -2,7 +2,8 @@ fastapi
 uvicorn[standard]
 langchain
 langchain-core
-langchain-ollama
+langchain-classic
+langchain-groq
 langchain-community
 requests
 python-dotenv

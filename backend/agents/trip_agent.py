@@ -2,11 +2,13 @@
 import os
 from typing import Optional
 
-from langchain_ollama import ChatOllama
-from langchain.agents import create_react_agent, AgentExecutor
+from langchain_groq import ChatGroq
+from langchain_classic.agents import create_react_agent, AgentExecutor
 from langchain_core.prompts import PromptTemplate
 
 from tools.toolkit import get_all_tools
+
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 
 
 REACT_PROMPT = PromptTemplate.from_template("""You are a helpful AI trip planner assistant.
@@ -31,9 +33,10 @@ Question: {input}
 Thought:{agent_scratchpad}""")
 
 
-def create_nextrip_agent(model: str = "llama3.1:8b", temperature: float = 0):
-    """Create NexTrip ReAct agent as per context."""
-    llm = ChatOllama(model=model, temperature=temperature)
+def create_nextrip_agent(model: str = GROQ_MODEL, temperature: float = 0):
+    """Create NexTrip ReAct agent using Groq (Llama 3.1 8B)."""
+    llm = ChatGroq(model=model, temperature=temperature,
+                   api_key=os.getenv("GROQ_API_KEY"))
     tools = get_all_tools()
     agent = create_react_agent(llm, tools, REACT_PROMPT)
     agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, handle_parsing_errors=True)

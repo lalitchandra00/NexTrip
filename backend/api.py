@@ -1,14 +1,35 @@
+import os
+
+from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException
 from schemas import TripRequest, TripResponse
 from agents.trip_agent import create_nextrip_agent
 
+load_dotenv()
+
 router = APIRouter()
+
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+
+
+def _ensure_llm_ready():
+    if not os.getenv("GROQ_API_KEY"):
+        raise HTTPException(
+            status_code=503,
+            detail="GROQ_API_KEY is not set. Add it to backend/.env and restart the server.",
+        )
+
+
+@router.get("/health")
+async def health():
+    return {"status": "ok"}
 
 
 @router.post("/plan-trip", response_model=TripResponse)
 async def plan_trip(request: TripRequest):
+    _ensure_llm_ready()
     try:
-        agent = create_nextrip_agent()
+        agent = create_nextrip_agent(model=GROQ_MODEL)
         query_parts = [
             f"Plan a trip from {request.from_location} to {request.to_location}",
             f"on {request.travel_date} for {request.num_days} days",
@@ -27,8 +48,3 @@ async def plan_trip(request: TripRequest):
         return TripResponse(status="success", result=result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/health")
-async def health():
-    return {"status": "ok"}
