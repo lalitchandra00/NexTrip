@@ -6,7 +6,7 @@ from langchain_ollama import ChatOllama
 from langchain.agents import create_react_agent, AgentExecutor
 from langchain_core.prompts import PromptTemplate
 
-from toolkit import get_all_tools
+from tools.toolkit import get_all_tools
 
 
 REACT_PROMPT = PromptTemplate.from_template("""You are a helpful AI trip planner assistant.

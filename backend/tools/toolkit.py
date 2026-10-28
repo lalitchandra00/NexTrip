@@ -1,12 +1,12 @@
 # Combined toolkit for all tools
 from typing import List
 
-from Transportation.train import search_trains
-from Transportation.flight import search_flights
-from Transportation.bus import search_buses
-from Stay.hotel import search_hotels
-from Rentals.car import search_rentals
-from Weather.weather import get_weather
+from tools.transportation.train import search_trains
+from tools.transportation.flight import search_flights
+from tools.transportation.bus import search_buses
+from tools.hotels.hotel import search_hotels
+from tools.rentals.car import search_rentals
+from tools.weather.weather import get_weather
 
 
 class NexTripToolkit:
