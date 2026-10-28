@@ -3,10 +3,9 @@ uvicorn[standard]
 langchain
 langchain-core
 langchain-classic
-langchain-groq
+langchain-google-genai
 langchain-community
 requests
 python-dotenv
 pydantic
-ollama
 httpx

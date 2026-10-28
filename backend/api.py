@@ -9,14 +9,11 @@ load_dotenv()
 
 router = APIRouter()
 
-GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
-
-
 def _ensure_llm_ready():
-    if not os.getenv("GROQ_API_KEY"):
+    if not os.getenv("GOOGLE_API_KEY"):
         raise HTTPException(
             status_code=503,
-            detail="GROQ_API_KEY is not set. Add it to backend/.env and restart the server.",
+            detail="GOOGLE_API_KEY is not set. Add it to backend/.env and restart the server.",
         )
 
 
@@ -29,7 +26,7 @@ async def health():
 async def plan_trip(request: TripRequest):
     _ensure_llm_ready()
     try:
-        agent = create_nextrip_agent(model=GROQ_MODEL)
+        agent = create_nextrip_agent()
         query_parts = [
             f"Plan a trip from {request.from_location} to {request.to_location}",
             f"on {request.travel_date} for {request.num_days} days",
