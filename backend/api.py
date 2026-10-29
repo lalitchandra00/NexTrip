@@ -1,4 +1,6 @@
 import os
+import asyncio
+from functools import partial
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException
@@ -41,7 +43,13 @@ async def plan_trip(request: TripRequest):
         query_parts.append("Find transportation options (trains/flights/buses) and weather information")
         
         query = ". ".join(query_parts) + "."
-        result = agent.invoke({"input": query})
+        loop = asyncio.get_event_loop()
+        result = await asyncio.wait_for(
+            loop.run_in_executor(None, partial(agent.invoke, {"input": query})),
+            timeout=120.0  # 2-minute timeout
+        )
         return TripResponse(status="success", result=result)
+    except asyncio.TimeoutError:
+        raise HTTPException(status_code=504, detail="Agent timed out after 120 seconds. Try a simpler query.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
