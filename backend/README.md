@@ -25,7 +25,7 @@ FastAPI and Pydantic validate incoming JSON before the planning workflow runs.
 
 1. Receives the normalized trip request as a natural-language planning prompt.
 2. Selects from the available travel tools.
-3. Calls tools for transportation, hotels, rentals, and weather as needed.
+3. Calls tools for transportation, places to visit, hotels, rentals, and weather as needed.
 4. Uses the tool observations to produce the final trip-planning response.
 
 The backend uses the configured `ChatGoogleGenerativeAI` Gemini model as the only language model. The Google credential is read from `GOOGLE_API_KEY`.
@@ -37,6 +37,7 @@ The backend uses the configured `ChatGoogleGenerativeAI` Gemini model as the onl
 - Train search
 - Flight search
 - Bus search
+- Places to visit search (DuckDuckGo web search)
 - Hotel search
 - Car rental search
 - Weather lookup
@@ -52,8 +53,9 @@ The domain modules under [`tools/`](./tools/) call external travel services:
 - RapidAPI FlixBus for bus stations and trips
 - RapidAPI Booking.com services for destinations, hotels, and car rentals
 - Weatherstack for current weather
+- DuckDuckGo web search for the top places to visit at the destination
 
-Provider credentials are loaded from environment variables. RapidAPI integrations use `RAPID_API_KEY` or `RAPIDAPI_KEY`; weather uses `WEATHER_STACK_API`; Gemini uses `GOOGLE_API_KEY`.
+Provider credentials are loaded from environment variables. RapidAPI integrations use `RAPID_API_KEY` or `RAPIDAPI_KEY`; weather uses `WEATHER_STACK_API`; Gemini uses `GOOGLE_API_KEY`. The places search uses DuckDuckGo through the `ddgs` package and requires no API key.
 
 See [`apis.md`](./apis.md) for the application endpoints and the complete provider endpoint reference.
 

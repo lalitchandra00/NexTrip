@@ -5,6 +5,7 @@ langchain-core
 langchain-classic
 langchain-google-genai
 langchain-community
+ddgs
 requests
 python-dotenv
 pydantic

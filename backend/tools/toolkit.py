@@ -4,6 +4,7 @@ from typing import List
 from tools.transportation.train import search_trains
 from tools.transportation.flight import search_flights
 from tools.transportation.bus import search_buses
+from tools.places.places import search_places
 from tools.hotels.hotel import search_hotels
 from tools.rentals.car import search_rentals
 from tools.weather.weather import get_weather
@@ -18,6 +19,12 @@ class NexTripToolkit:
             search_trains,
             search_flights,
             search_buses,
+        ]
+
+    @staticmethod
+    def get_places_tools() -> List:
+        return [
+            search_places,
         ]
 
     @staticmethod
@@ -42,6 +49,7 @@ class NexTripToolkit:
     def get_all_tools() -> List:
         tools = []
         tools.extend(NexTripToolkit.get_transportation_tools())
+        tools.extend(NexTripToolkit.get_places_tools())
         tools.extend(NexTripToolkit.get_hotel_tools())
         tools.extend(NexTripToolkit.get_rental_tools())
         tools.extend(NexTripToolkit.get_weather_tools())
@@ -54,3 +62,7 @@ def get_all_tools():
 
 def get_transportation_tools():
     return NexTripToolkit.get_transportation_tools()
+
+
+def get_places_tools():
+    return NexTripToolkit.get_places_tools()

@@ -40,6 +40,7 @@ async def plan_trip(request: TripRequest):
             query_parts.append("Find suitable hotels at destination")
         if request.include_rentals:
             query_parts.append("Find car rentals")
+        query_parts.append("Find the top 10 places to visit at the destination")
         query_parts.append("Find transportation options (trains/flights/buses) and weather information")
         
         query = ". ".join(query_parts) + "."
