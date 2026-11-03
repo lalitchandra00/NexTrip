@@ -37,16 +37,12 @@ function App() {
     try {
       const response = await fetch('/api/plan-trip', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       })
 
       const data = await response.json()
-      if (!response.ok) {
-        throw new Error(data.detail || 'Something went wrong')
-      }
+      if (!response.ok) throw new Error(data.detail || 'Something went wrong')
       setResult(data)
     } catch (err) {
       setError(err.message)
@@ -57,37 +53,63 @@ function App() {
 
   return (
     <div className="container">
-      <h1>NexTrip - AI Trip Planner</h1>
+      <header className="app-header">
+        <span className="app-badge">AI Trip Planner</span>
+        <h1>Nex<span>Trip</span></h1>
+        <p className="app-subtitle">
+          Transport, places, stays, and weather — planned together.
+        </p>
+      </header>
 
       <form onSubmit={handleSubmit} className="trip-form">
-        <div className="form-row">
+        <div className="form-heading">
+          <h2>Plan your trip</h2>
+          <p>Fill in the details and let AI do the rest.</p>
+        </div>
+
+        {/* ── Route ── */}
+        <p className="form-section-label"><span>📍</span> Route</p>
+        <div className="route-row">
           <div className="form-group">
-            <label htmlFor="from_location">From Location *</label>
-            <input
-              type="text"
-              id="from_location"
-              name="from_location"
-              value={formData.from_location}
-              onChange={handleChange}
-              required
-            />
+            <label htmlFor="from_location">From</label>
+            <div className="input-icon-wrap">
+              <span className="input-icon">🛫</span>
+              <input
+                type="text"
+                id="from_location"
+                name="from_location"
+                placeholder="Departure city"
+                value={formData.from_location}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
+          <span className="route-arrow">→</span>
           <div className="form-group">
-            <label htmlFor="to_location">To Location *</label>
-            <input
-              type="text"
-              id="to_location"
-              name="to_location"
-              value={formData.to_location}
-              onChange={handleChange}
-              required
-            />
+            <label htmlFor="to_location">To</label>
+            <div className="input-icon-wrap">
+              <span className="input-icon">🛬</span>
+              <input
+                type="text"
+                id="to_location"
+                name="to_location"
+                placeholder="Destination city"
+                value={formData.to_location}
+                onChange={handleChange}
+                required
+              />
+            </div>
           </div>
         </div>
 
+        {/* ── Dates ── */}
+        <p className="form-section-label"><span>📅</span> Dates</p>
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="travel_date">Travel Date *</label>
+            <label htmlFor="travel_date">
+              Departure date <span className="required-star">*</span>
+            </label>
             <input
               type="date"
               id="travel_date"
@@ -98,7 +120,9 @@ function App() {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="return_date">Return Date</label>
+            <label htmlFor="return_date">
+              Return date <span className="optional-tag">optional</span>
+            </label>
             <input
               type="date"
               id="return_date"
@@ -109,9 +133,11 @@ function App() {
           </div>
         </div>
 
-        <div className="form-row">
+        {/* ── Travellers & Preferences ── */}
+        <p className="form-section-label"><span>🧳</span> Travellers &amp; Preferences</p>
+        <div className="form-row form-row-4">
           <div className="form-group">
-            <label htmlFor="num_days">Number of Days</label>
+            <label htmlFor="num_days">Days</label>
             <input
               type="number"
               id="num_days"
@@ -132,11 +158,8 @@ function App() {
               onChange={handleChange}
             />
           </div>
-        </div>
-
-        <div className="form-row">
           <div className="form-group">
-            <label htmlFor="cabin_class">Cabin Class</label>
+            <label htmlFor="cabin_class">Cabin class</label>
             <select
               id="cabin_class"
               name="cabin_class"
@@ -157,14 +180,16 @@ function App() {
               value={formData.currency}
               onChange={handleChange}
             >
-              <option value="INR">INR</option>
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
+              <option value="INR">🇮🇳 INR</option>
+              <option value="USD">🇺🇸 USD</option>
+              <option value="EUR">🇪🇺 EUR</option>
             </select>
           </div>
         </div>
 
-        <div className="form-row checkbox-row">
+        {/* ── Add-ons ── */}
+        <p className="form-section-label"><span>➕</span> Add-ons</p>
+        <div className="checkbox-row">
           <label className="checkbox-label">
             <input
               type="checkbox"
@@ -172,7 +197,7 @@ function App() {
               checked={formData.include_hotels}
               onChange={handleChange}
             />
-            Include Hotels
+            🏨 Hotels
           </label>
           <label className="checkbox-label">
             <input
@@ -181,14 +206,21 @@ function App() {
               checked={formData.include_rentals}
               onChange={handleChange}
             />
-            Include Car Rentals
+            🚗 Car Rentals
           </label>
         </div>
 
         <button type="submit" className="submit-btn" disabled={loading}>
-          {loading ? 'Planning Trip...' : 'Plan Trip'}
+          {loading ? '⏳ Planning your trip…' : '✈ Plan My Trip'}
         </button>
       </form>
+
+      {loading && (
+        <div className="loading-note">
+          <span className="loading-dot" />
+          Searching transport, places, and weather...
+        </div>
+      )}
 
       {error && (
         <div className="error-box">
@@ -210,10 +242,34 @@ function App() {
           {result.itinerary?.days?.length > 0 ? (
             <>
               <h2>Day-by-Day Itinerary</h2>
-              <p className="itinerary-meta">
-                {result.itinerary.destination} · {result.itinerary.num_days} day
-                {result.itinerary.num_days !== 1 ? 's' : ''}
-              </p>
+              <div className="trip-summary">
+                <div className="summary-item">
+                  <span>Destination</span>
+                  <strong>{result.itinerary.destination}</strong>
+                </div>
+                <div className="summary-item">
+                  <span>Duration</span>
+                  <strong>
+                    {result.itinerary.num_days} day
+                    {result.itinerary.num_days !== 1 ? 's' : ''}
+                  </strong>
+                </div>
+                <div className="summary-item">
+                  <span>Places</span>
+                  <strong>{result.itinerary.places?.length || 0}</strong>
+                </div>
+                {result.itinerary.days?.[0]?.date && (
+                  <div className="summary-item">
+                    <span>Dates</span>
+                    <strong>
+                      {result.itinerary.days[0].date}
+                      {result.itinerary.days.length > 1
+                        ? ` – ${result.itinerary.days[result.itinerary.days.length - 1].date}`
+                        : ''}
+                    </strong>
+                  </div>
+                )}
+              </div>
               {result.itinerary.places?.length > 0 && (
                 <div className="places-overview">
                   <h3>Places to visit</h3>
@@ -231,11 +287,11 @@ function App() {
                 {result.itinerary.days.map((day) => (
                   <div key={day.day} className="day-card">
                     <div className="day-header">
-                      <h3>
-                        Day {day.day}
-                        {day.date ? ` · ${day.date}` : ''}
-                      </h3>
-                      <span className="day-title">{day.title}</span>
+                      <span className="day-badge">Day {day.day}</span>
+                      <div className="day-heading">
+                        <h3>{day.title}</h3>
+                        {day.date && <span className="day-date">{day.date}</span>}
+                      </div>
                     </div>
                     {day.slots?.length ? (
                       <ul className="timeline">
@@ -247,6 +303,7 @@ function App() {
                             <span className="timeline-time">
                               {slot.start_time} – {slot.end_time}
                             </span>
+                            <span className="timeline-dot" />
                             <div className="timeline-content">
                               <strong>{slot.place}</strong>
                               {slot.area && <span className="timeline-area">{slot.area}</span>}
@@ -283,6 +340,10 @@ function App() {
           </details>
         </div>
       )}
+
+      <footer className="app-footer">
+        NexTrip &middot; Plan less, travel more.
+      </footer>
     </div>
   )
 }

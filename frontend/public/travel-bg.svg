@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e7f0ff" />
+      <stop offset="48%" stop-color="#f4f8ff" />
+      <stop offset="100%" stop-color="#e4edf9" />
+    </linearGradient>
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fde68a" stop-opacity="0.75" />
+      <stop offset="100%" stop-color="#fde68a" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="ridgeFar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c9daf1" />
+      <stop offset="100%" stop-color="#dce7f6" />
+    </linearGradient>
+    <linearGradient id="ridgeMid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a9c2e2" />
+      <stop offset="100%" stop-color="#c3d6ee" />
+    </linearGradient>
+    <linearGradient id="ridgeNear" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8fb0d6" />
+      <stop offset="100%" stop-color="#b3c9e6" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#sky)" />
+
+  <circle cx="1230" cy="185" r="230" fill="url(#sunGlow)" />
+  <circle cx="1230" cy="185" r="96" fill="#fcd34d" opacity="0.32" />
+
+  <g fill="#ffffff" opacity="0.55">
+    <ellipse cx="310" cy="190" rx="120" ry="34" />
+    <ellipse cx="410" cy="175" rx="90" ry="28" />
+    <ellipse cx="910" cy="130" rx="100" ry="26" />
+    <ellipse cx="985" cy="118" rx="70" ry="20" />
+    <ellipse cx="620" cy="300" rx="80" ry="20" />
+  </g>
+
+  <path
+    d="M110 292 C 360 170, 690 330, 940 236 S 1320 160, 1490 246"
+    fill="none"
+    stroke="#7f9cbf"
+    stroke-width="2"
+    stroke-dasharray="9 13"
+    opacity="0.45"
+  />
+  <g transform="translate(1478 238) rotate(20)" fill="#64809f" opacity="0.7">
+    <path d="M0 0 L30 9 L0 18 L7 9 Z" />
+  </g>
+
+  <path
+    d="M0 610 L120 548 L236 596 L360 500 L472 574 L604 470 L742 570 L868 486 L1010 590 L1148 512 L1278 592 L1408 500 L1524 576 L1600 540 L1600 900 L0 900 Z"
+    fill="url(#ridgeFar)"
+    opacity="0.78"
+  />
+  <path
+    d="M0 700 L142 628 L274 690 L420 592 L556 682 L700 604 L846 700 L988 616 L1128 696 L1272 610 L1414 700 L1540 628 L1600 668 L1600 900 L0 900 Z"
+    fill="url(#ridgeMid)"
+    opacity="0.62"
+  />
+  <path
+    d="M0 796 L156 724 L304 786 L456 704 L612 792 L762 716 L918 804 L1070 724 L1226 806 L1382 732 L1530 800 L1600 764 L1600 900 L0 900 Z"
+    fill="url(#ridgeNear)"
+    opacity="0.46"
+  />
+
+  <g fill="#5f7b9b" opacity="0.28">
+    <circle cx="240" cy="520" r="5" />
+    <circle cx="520" cy="470" r="4" />
+    <circle cx="820" cy="540" r="5" />
+    <circle cx="1110" cy="480" r="4" />
+    <circle cx="1370" cy="530" r="5" />
+  </g>
+</svg>

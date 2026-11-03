@@ -1,12 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --brand:        #4f46e5;
+  --brand-dark:   #3730a3;
+  --brand-light:  #818cf8;
+  --accent:       #06b6d4;
+  --surface:      rgba(255,255,255,0.82);
+  --surface-alt:  rgba(255,255,255,0.6);
+  --border:       rgba(99,102,241,0.14);
+  --text-primary: #0f172a;
+  --text-muted:   #64748b;
+  --bg-page:      #0f0c29;
+  --shadow-card:  0 24px 60px -20px rgba(15,23,42,0.4);
+  --radius-card:  18px;
+  --radius-input: 10px;
 }
 
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
 body {
-  margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  background-attachment: fixed;
+  color: var(--text-primary);
 }
+
+::selection { background: #818cf8; color: #fff; }
+
+button, input, select { font: inherit; }
+
