@@ -199,8 +199,88 @@ function App() {
 
       {result && (
         <div className="result-box">
-          <h2>Trip Plan</h2>
-          <pre>{JSON.stringify(result, null, 2)}</pre>
+          {result.error && (
+            <p className="result-warning">
+              Some travel details could not be loaded: {result.error}
+            </p>
+          )}
+          {result.itinerary?.error && (
+            <p className="result-warning">{result.itinerary.error}</p>
+          )}
+          {result.itinerary?.days?.length > 0 ? (
+            <>
+              <h2>Day-by-Day Itinerary</h2>
+              <p className="itinerary-meta">
+                {result.itinerary.destination} · {result.itinerary.num_days} day
+                {result.itinerary.num_days !== 1 ? 's' : ''}
+              </p>
+              {result.itinerary.places?.length > 0 && (
+                <div className="places-overview">
+                  <h3>Places to visit</h3>
+                  <ul className="places-list">
+                    {result.itinerary.places.map((place) => (
+                      <li key={place.name}>
+                        <strong>{place.name}</strong>
+                        {place.area && <span className="timeline-area">{place.area}</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <div className="itinerary-days">
+                {result.itinerary.days.map((day) => (
+                  <div key={day.day} className="day-card">
+                    <div className="day-header">
+                      <h3>
+                        Day {day.day}
+                        {day.date ? ` · ${day.date}` : ''}
+                      </h3>
+                      <span className="day-title">{day.title}</span>
+                    </div>
+                    {day.slots?.length ? (
+                      <ul className="timeline">
+                        {day.slots.map((slot, index) => (
+                          <li
+                            key={`${day.day}-${index}`}
+                            className={`timeline-item ${slot.kind === 'break' ? 'timeline-break' : ''}`}
+                          >
+                            <span className="timeline-time">
+                              {slot.start_time} – {slot.end_time}
+                            </span>
+                            <div className="timeline-content">
+                              <strong>{slot.place}</strong>
+                              {slot.area && <span className="timeline-area">{slot.area}</span>}
+                              {slot.notes && <p>{slot.notes}</p>}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="free-day">Free day — explore at leisure.</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <h2>Trip Plan</h2>
+          )}
+
+          {result.result && (
+            <details className="raw-result">
+              <summary>Agent plan</summary>
+              <pre>
+                {typeof result.result === 'string'
+                  ? result.result
+                  : result.result.output || JSON.stringify(result.result, null, 2)}
+              </pre>
+            </details>
+          )}
+
+          <details className="raw-result">
+            <summary>Raw response</summary>
+            <pre>{JSON.stringify(result, null, 2)}</pre>
+          </details>
         </div>
       )}
     </div>

@@ -30,6 +30,10 @@ FastAPI and Pydantic validate incoming JSON before the planning workflow runs.
 
 The backend uses the configured `ChatGoogleGenerativeAI` Gemini model as the only language model. The Google credential is read from `GOOGLE_API_KEY`.
 
+### Places itinerary
+
+[`tools/places/itinerary.py`](./tools/places/itinerary.py) turns the DuckDuckGo search results into a structured day-by-day plan. It extracts about twice as many places as the number of trip days, fills gaps from the top search result pages when needed, then asks Gemini to assign the places to days while grouping nearby stops. A deterministic fallback handles scheduling into time slots with travel buffers and a lunch break when the model is unavailable. The endpoint returns the result in the `itinerary` field alongside the agent response.
+
 ### Tool orchestration
 
 [`tools/toolkit.py`](./tools/toolkit.py) gathers all domain tools into the agent tool list:

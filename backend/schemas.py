@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import Optional, Any
+from pydantic import BaseModel, Field
+from typing import Optional, Any, List
 
 
 class TripRequest(BaseModel):
@@ -16,7 +16,39 @@ class TripRequest(BaseModel):
     country_of_residence: str = "in"
 
 
+class ItineraryPlace(BaseModel):
+    name: str
+    area: str = ""
+    duration_minutes: int = 120
+    description: str = ""
+
+
+class ItinerarySlot(BaseModel):
+    start_time: str
+    end_time: str
+    place: str
+    area: str = ""
+    notes: str = ""
+    kind: str = "place"
+
+
+class ItineraryDay(BaseModel):
+    day: int
+    date: Optional[str] = None
+    title: str
+    slots: List[ItinerarySlot] = Field(default_factory=list)
+
+
+class ItineraryPlan(BaseModel):
+    destination: str
+    num_days: int
+    places: List[ItineraryPlace] = Field(default_factory=list)
+    days: List[ItineraryDay] = Field(default_factory=list)
+    error: Optional[str] = None
+
+
 class TripResponse(BaseModel):
     status: str
     result: Any = None
+    itinerary: Optional[ItineraryPlan] = None
     error: Optional[str] = None

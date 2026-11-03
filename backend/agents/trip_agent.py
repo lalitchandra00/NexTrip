@@ -15,7 +15,8 @@ Your task is to plan trips by finding transportation, places to visit, hotels, r
 Call the available tools to gather real data instead of inventing details.
 Use only the tools needed for the request and pass all required arguments.
 If a tool returns an error, continue with the remaining tools and mention the failure in the final plan.
-Finish with a concise, organized trip plan."""
+Find about twice as many places as the number of trip days, then assign the places to each day, grouping nearby places together.
+Finish with a concise, organized trip plan that includes the day-by-day place assignment."""
 
 AGENT_PROMPT = ChatPromptTemplate.from_messages([
     ("system", SYSTEM_PROMPT),

@@ -8,6 +8,7 @@ NexTrip brings together the information a traveler needs when planning a trip:
 
 - Transportation options by train, flight, and bus
 - Top places to visit at the destination
+- A day-by-day itinerary with time slots that groups nearby places together
 - Hotel recommendations at the destination
 - Optional car rental suggestions
 - Weather information for the destination
@@ -22,4 +23,4 @@ The planner accepts a starting location, destination, and travel details, then p
 3. Choose the number of days and number of adults.
 4. Select a cabin class and display currency.
 5. Choose whether to include hotels and car rentals.
-6. Submit the request to receive transportation, places to visit, accommodation, rental, and weather information.
+6. Submit the request to receive transportation, a day-by-day places itinerary, accommodation, rental, and weather information.
