@@ -7,6 +7,8 @@ from langchain_core.tools import tool
 
 load_dotenv()
 
+REQUEST_TIMEOUT = 20
+
 
 class TrainAPI:
     def __init__(self, api_key: Optional[str] = None):
@@ -22,7 +24,7 @@ class TrainAPI:
         """Search for railway stations by name (only q needed)."""
         url = f"{self.base_url}/stations/search"
         querystring = {"q": query}
-        response = requests.get(url, headers=self.headers, params=querystring)
+        response = requests.get(url, headers=self.headers, params=querystring, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
         return response.json()
 
@@ -36,7 +38,7 @@ class TrainAPI:
         }
         if via:
             querystring["via"] = via
-        response = requests.get(url, headers=self.headers, params=querystring)
+        response = requests.get(url, headers=self.headers, params=querystring, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
         return response.json()
 
@@ -64,8 +66,13 @@ def search_trains_tool(from_location: str, to_location: str,
         return {"error": "Could not find stations for one or both locations"}
 
     # Use first/closest station codes
-    from_code = from_stations[0].get("station_code")
-    to_code = to_stations[0].get("station_code")
+    from_station = from_stations[0]
+    to_station = to_stations[0]
+    from_code = from_station.get("code_current") or from_station.get("station_code") or from_station.get("code")
+    to_code = to_station.get("code_current") or to_station.get("station_code") or to_station.get("code")
+
+    if not from_code or not to_code:
+        return {"error": "Could not extract station codes", "from_stations": from_stations, "to_stations": to_stations}
 
     # Get trains
     trains = train_api.get_trains_between_stations(from_code, to_code)
@@ -82,4 +89,7 @@ def search_trains(from_location: str, to_location: str,
                   from_lat: Optional[float] = None, from_lon: Optional[float] = None,
                   to_lat: Optional[float] = None, to_lon: Optional[float] = None) -> Dict[str, Any]:
     """Search for trains between locations. Find stations and get trains."""
-    return search_trains_tool(from_location, to_location, from_lat, from_lon, to_lat, to_lon)
+    try:
+        return search_trains_tool(from_location, to_location, from_lat, from_lon, to_lat, to_lon)
+    except Exception as e:
+        return {"error": f"Train search failed: {e}"}

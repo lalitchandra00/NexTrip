@@ -7,6 +7,8 @@ from langchain_core.tools import tool
 
 load_dotenv()
 
+REQUEST_TIMEOUT = 20
+
 
 class FlightAPI:
     def __init__(self, api_key: Optional[str] = None):
@@ -21,7 +23,7 @@ class FlightAPI:
         """Search for airports/cities by name. Send only query as needed."""
         url = f"{self.base_url}/v1/flights/searchAirport"
         querystring = {"query": query, "locale": locale}
-        response = requests.get(url, headers=self.headers, params=querystring)
+        response = requests.get(url, headers=self.headers, params=querystring, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
         return response.json()
 
@@ -46,7 +48,7 @@ class FlightAPI:
             "market": market,
             "countryCode": country_code
         }
-        response = requests.get(url, headers=self.headers, params=querystring)
+        response = requests.get(url, headers=self.headers, params=querystring, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
         return response.json()
 
@@ -105,4 +107,7 @@ def search_flights_tool(from_location: str, to_location: str, travel_date: str,
 def search_flights(from_location: str, to_location: str, travel_date: str,
                    cabin_class: str = "economy", adults: int = 1) -> Dict[str, Any]:
     """Search for flights between locations. Find airports and get flights."""
-    return search_flights_tool(from_location, to_location, travel_date, cabin_class, adults)
+    try:
+        return search_flights_tool(from_location, to_location, travel_date, cabin_class, adults)
+    except Exception as e:
+        return {"error": f"Flight search failed: {e}"}

@@ -43,10 +43,10 @@ async def plan_trip(request: TripRequest):
         query_parts.append("Find transportation options (trains/flights/buses) and weather information")
         
         query = ". ".join(query_parts) + "."
-        loop = asyncio.get_event_loop()
+        timeout = float(os.getenv("PLAN_TRIP_TIMEOUT", "120"))
         result = await asyncio.wait_for(
-            loop.run_in_executor(None, partial(agent.invoke, {"input": query})),
-            timeout=120.0  # 2-minute timeout
+            asyncio.to_thread(partial(agent.invoke, {"input": query})),
+            timeout=timeout
         )
         return TripResponse(status="success", result=result)
     except asyncio.TimeoutError:

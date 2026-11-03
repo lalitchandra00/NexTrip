@@ -2,44 +2,48 @@
 import os
 
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_classic.agents import create_react_agent, AgentExecutor
-from langchain_core.prompts import PromptTemplate
+from langchain_classic.agents import create_tool_calling_agent, AgentExecutor
+from langchain_core.prompts import ChatPromptTemplate
 
 from tools.toolkit import get_all_tools
 
-REACT_PROMPT = PromptTemplate.from_template("""You are a helpful AI trip planner assistant.
+DEFAULT_MODEL = "gemini-3.6-flash"
+
+SYSTEM_PROMPT = """You are a helpful AI trip planner assistant.
 
 Your task is to plan trips by finding transportation, hotels, rentals, and weather information.
+Call the available tools to gather real data instead of inventing details.
+Use only the tools needed for the request and pass all required arguments.
+If a tool returns an error, continue with the remaining tools and mention the failure in the final plan.
+Finish with a concise, organized trip plan."""
 
-You have access to the following tools:
-{tools}
-
-Use the following format:
-
-Question: the input question you must answer
-Thought: you should always think about what to do
-Action: the action to take, should be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
-... (this Thought/Action/Action Input/Observation can repeat N times)
-Thought: I now know the final answer
-Final Answer: the final answer to the original input
-
-Question: {input}
-Thought:{agent_scratchpad}""")
+AGENT_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", SYSTEM_PROMPT),
+    ("human", "{input}"),
+    ("placeholder", "{agent_scratchpad}"),
+])
 
 
 def create_nextrip_agent():
-    """Create the NexTrip ReAct agent using Gemini."""
+    """Create the NexTrip agent using Gemini."""
     llm = ChatGoogleGenerativeAI(
-        model="gemini-3.8-flash",
+        model=os.getenv("GEMINI_MODEL", DEFAULT_MODEL),
         google_api_key=os.getenv("GOOGLE_API_KEY"),
         temperature=0.3,
-        # max_tokens=20,
+        request_timeout=float(os.getenv("LLM_REQUEST_TIMEOUT", "30")),
+        retries=int(os.getenv("LLM_MAX_RETRIES", "1")),
     )
     tools = get_all_tools()
-    agent = create_react_agent(llm, tools, REACT_PROMPT)
-    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, handle_parsing_errors=True)
+    agent = create_tool_calling_agent(llm, tools, AGENT_PROMPT)
+    agent_executor = AgentExecutor(
+        agent=agent,
+        tools=tools,
+        verbose=os.getenv("AGENT_VERBOSE", "false").lower() == "true",
+        handle_parsing_errors=True,
+        max_iterations=int(os.getenv("AGENT_MAX_ITERATIONS", "6")),
+        max_execution_time=float(os.getenv("AGENT_MAX_EXECUTION_TIME", "90")),
+        early_stopping_method="force",
+    )
     return agent_executor
 
 

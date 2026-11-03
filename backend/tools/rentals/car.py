@@ -7,6 +7,8 @@ from langchain_core.tools import tool
 
 load_dotenv()
 
+REQUEST_TIMEOUT = 20
+
 
 class RentalAPI:
     def __init__(self, api_key: Optional[str] = None):
@@ -21,7 +23,7 @@ class RentalAPI:
         """Get location details for car pickup."""
         url = f"{self.base_url}/cars/searchDestination"
         querystring = {"term": term, "countryOfResidence": country_of_residence}
-        response = requests.get(url, headers=self.headers, params=querystring)
+        response = requests.get(url, headers=self.headers, params=querystring, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
         return response.json()
 
@@ -40,7 +42,7 @@ class RentalAPI:
             "drop_off_time": drop_off_time,
             "countryOfResidence": country_of_residence
         }
-        response = requests.get(url, headers=self.headers, params=querystring)
+        response = requests.get(url, headers=self.headers, params=querystring, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
         return response.json()
 
@@ -74,6 +76,9 @@ def search_rentals(location_term: str, pick_up_date: str, pick_up_time: str,
                    drop_off_date: str, drop_off_time: str,
                    country_of_residence: str = "us") -> Dict[str, Any]:
     """Search car rentals at location."""
-    return search_rentals_tool(location_term, pick_up_date, pick_up_time,
-                               drop_off_date, drop_off_time,
-                               country_of_residence)
+    try:
+        return search_rentals_tool(location_term, pick_up_date, pick_up_time,
+                                   drop_off_date, drop_off_time,
+                                   country_of_residence)
+    except Exception as e:
+        return {"error": f"Car rental search failed: {e}"}

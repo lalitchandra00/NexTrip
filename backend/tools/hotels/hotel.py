@@ -7,6 +7,8 @@ from langchain_core.tools import tool
 
 load_dotenv()
 
+REQUEST_TIMEOUT = 20
+
 
 class HotelAPI:
     def __init__(self, api_key: Optional[str] = None):
@@ -21,7 +23,7 @@ class HotelAPI:
         """Search hotel destination by name."""
         url = f"{self.base_url}/hotels/searchDestination"
         querystring = {"query": query}
-        response = requests.get(url, headers=self.headers, params=querystring)
+        response = requests.get(url, headers=self.headers, params=querystring, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
         return response.json()
 
@@ -51,7 +53,7 @@ class HotelAPI:
             querystring["arrival_date"] = arrival_date
         if departure_date:
             querystring["departure_date"] = departure_date
-        response = requests.get(url, headers=self.headers, params=querystring)
+        response = requests.get(url, headers=self.headers, params=querystring, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
         return response.json()
 
@@ -85,5 +87,8 @@ def search_hotels(destination: str, arrival_date: Optional[str] = None,
                   search_type: str = "CITY", adults: int = 1,
                   currency_code: str = "INR") -> Dict[str, Any]:
     """Search hotels at destination."""
-    return search_hotels_tool(destination, arrival_date, departure_date,
-                              search_type, adults, currency_code)
+    try:
+        return search_hotels_tool(destination, arrival_date, departure_date,
+                                  search_type, adults, currency_code)
+    except Exception as e:
+        return {"error": f"Hotel search failed: {e}"}
