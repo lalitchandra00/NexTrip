@@ -1,15 +1,14 @@
 # Day-by-day itinerary builder for places to visit
 import html as html_lib
 import math
-import os
 import re
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
-from langchain_google_genai import ChatGoogleGenerativeAI
 from pydantic import BaseModel, Field
 
+from llm_config import structured_llm
 from tools.places.places import run_places_search
 
 MAX_PLACES_PER_DAY = 3
@@ -37,16 +36,6 @@ class PlannedDay(BaseModel):
 
 class DayAssignments(BaseModel):
     days: List[PlannedDay] = Field(default_factory=list)
-
-
-def _get_llm() -> ChatGoogleGenerativeAI:
-    return ChatGoogleGenerativeAI(
-        model=os.getenv("GEMINI_MODEL", "gemini-3.6-flash"),
-        google_api_key=os.getenv("GOOGLE_API_KEY"),
-        temperature=0,
-        request_timeout=float(os.getenv("LLM_REQUEST_TIMEOUT", "30")),
-        retries=int(os.getenv("LLM_MAX_RETRIES", "1")),
-    )
 
 
 def _clean_name(value: str) -> str:
@@ -241,7 +230,7 @@ def extract_places(
     places: List[ExtractedPlace] = []
     used_llm = False
     try:
-        structured_llm = _get_llm().with_structured_output(ExtractedPlaces)
+        extractor = structured_llm(ExtractedPlaces)
         prompt = (
             f"Extract the distinct tourist places worth visiting in {destination} "
             f"from the search results below. Return up to {target} places. "
@@ -250,7 +239,7 @@ def extract_places(
             "Only use places mentioned in the text. Do not invent places.\n\n"
             f"Search results:\n{search_text}"
         )
-        parsed = structured_llm.invoke(prompt)
+        parsed = extractor.invoke(prompt)
         used_llm = True
         if isinstance(parsed, ExtractedPlaces):
             places = list(parsed.places)
@@ -312,7 +301,7 @@ def _llm_assign_days(
     )
 
     try:
-        planner = _get_llm().with_structured_output(DayAssignments)
+        planner = structured_llm(DayAssignments)
         parsed = planner.invoke(prompt)
     except Exception:
         return None

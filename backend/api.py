@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException
 from schemas import TripRequest, TripResponse
 from agents.trip_agent import create_nextrip_agent
+from llm_config import model_names
 from tools.places.itinerary import build_places_itinerary
 
 load_dotenv()
@@ -29,7 +30,6 @@ async def health():
 async def plan_trip(request: TripRequest):
     _ensure_llm_ready()
     try:
-        agent = create_nextrip_agent()
         query_parts = [
             f"Plan a trip from {request.from_location} to {request.to_location}",
             f"on {request.travel_date} for {request.num_days} days",
@@ -56,10 +56,19 @@ async def plan_trip(request: TripRequest):
         itinerary_timeout = float(os.getenv("ITINERARY_TIMEOUT", "90"))
 
         async def run_agent():
-            return await asyncio.wait_for(
-                asyncio.to_thread(partial(agent.invoke, {"input": query})),
-                timeout=timeout,
-            )
+            names = model_names()
+            per_attempt = max(30.0, timeout / len(names))
+            last_error = None
+            for model_name in names:
+                try:
+                    agent = create_nextrip_agent(model_name)
+                    return await asyncio.wait_for(
+                        asyncio.to_thread(partial(agent.invoke, {"input": query})),
+                        timeout=per_attempt,
+                    )
+                except Exception as exc:
+                    last_error = exc
+            raise last_error
 
         async def run_itinerary():
             try:

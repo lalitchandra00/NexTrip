@@ -1,13 +1,11 @@
 # NexTrip Main Agent
 import os
 
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_classic.agents import create_tool_calling_agent, AgentExecutor
 from langchain_core.prompts import ChatPromptTemplate
 
+from llm_config import create_chat_model, model_names
 from tools.toolkit import get_all_tools
-
-DEFAULT_MODEL = "gemini-3.6-flash"
 
 SYSTEM_PROMPT = """You are a helpful AI trip planner assistant.
 
@@ -25,15 +23,9 @@ AGENT_PROMPT = ChatPromptTemplate.from_messages([
 ])
 
 
-def create_nextrip_agent():
+def create_nextrip_agent(model_name: str = None):
     """Create the NexTrip agent using Gemini."""
-    llm = ChatGoogleGenerativeAI(
-        model=os.getenv("GEMINI_MODEL", DEFAULT_MODEL),
-        google_api_key=os.getenv("GOOGLE_API_KEY"),
-        temperature=0.3,
-        request_timeout=float(os.getenv("LLM_REQUEST_TIMEOUT", "30")),
-        retries=int(os.getenv("LLM_MAX_RETRIES", "1")),
-    )
+    llm = create_chat_model(model_name or model_names()[0], temperature=0.3)
     tools = get_all_tools()
     agent = create_tool_calling_agent(llm, tools, AGENT_PROMPT)
     agent_executor = AgentExecutor(

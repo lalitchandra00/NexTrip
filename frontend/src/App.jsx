@@ -1,6 +1,18 @@
 import { useState } from 'react'
 import './App.css'
 
+const toRenderableText = (value) => {
+  if (value === null || value === undefined) return ''
+  if (typeof value === 'string') return value
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  if (Array.isArray(value)) return value.map(toRenderableText).join('\n')
+  if (typeof value === 'object') {
+    if (typeof value.text === 'string') return value.text
+    return JSON.stringify(value, null, 2)
+  }
+  return String(value)
+}
+
 function App() {
   const [formData, setFormData] = useState({
     from_location: '',
@@ -327,9 +339,9 @@ function App() {
             <details className="raw-result">
               <summary>Agent plan</summary>
               <pre>
-                {typeof result.result === 'string'
-                  ? result.result
-                  : result.result.output || JSON.stringify(result.result, null, 2)}
+                {toRenderableText(
+                  typeof result.result === 'object' ? result.result.output ?? result.result : result.result
+                )}
               </pre>
             </details>
           )}
