@@ -53,12 +53,29 @@ def search_rentals_tool(location_term: str, pick_up_date: str, pick_up_time: str
     """Tool to search car rentals. Get lat/lon for location first."""
     rental_api = RentalAPI()
     dest = rental_api.search_destination(location_term, country_of_residence)
-    if not dest.get("data"):
+    locations = dest.get("data") or []
+    if not locations:
         return {"error": "Could not find location", "raw": dest}
 
-    loc = dest["data"][0]
-    lat = loc.get("latitude") or loc.get("lat")
-    lon = loc.get("longitude") or loc.get("lng") or loc.get("lon")
+    loc = next(
+        (item for item in locations if item.get("type") == "city"),
+        locations[0],
+    )
+    coordinates = loc.get("coordinates") or {}
+    lat = (
+        coordinates.get("latitude")
+        or coordinates.get("lat")
+        or loc.get("latitude")
+        or loc.get("lat")
+    )
+    lon = (
+        coordinates.get("longitude")
+        or coordinates.get("lng")
+        or coordinates.get("lon")
+        or loc.get("longitude")
+        or loc.get("lng")
+        or loc.get("lon")
+    )
     if lat is None or lon is None:
         return {"error": "Could not extract coordinates", "location": loc}
 

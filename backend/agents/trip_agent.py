@@ -5,11 +5,12 @@ from langchain_classic.agents import create_tool_calling_agent, AgentExecutor
 from langchain_core.prompts import ChatPromptTemplate
 
 from llm_config import create_chat_model, model_names
-from tools.toolkit import get_all_tools
+from tools.toolkit import get_agent_tools
 
 SYSTEM_PROMPT = """You are a helpful AI trip planner assistant.
 
-Your task is to plan trips by finding transportation, places to visit, hotels, rentals, and weather information.
+Your task is to plan trips by finding places to visit, hotels, rentals, and weather information.
+Transportation is handled separately, so do not search for trains, flights, or buses.
 Call the available tools to gather real data instead of inventing details.
 Use only the tools needed for the request and pass all required arguments.
 If a tool returns an error, continue with the remaining tools and mention the failure in the final plan.
@@ -26,7 +27,7 @@ AGENT_PROMPT = ChatPromptTemplate.from_messages([
 def create_nextrip_agent(model_name: str = None):
     """Create the NexTrip agent using Gemini."""
     llm = create_chat_model(model_name or model_names()[0], temperature=0.3)
-    tools = get_all_tools()
+    tools = get_agent_tools()
     agent = create_tool_calling_agent(llm, tools, AGENT_PROMPT)
     agent_executor = AgentExecutor(
         agent=agent,

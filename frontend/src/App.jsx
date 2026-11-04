@@ -13,6 +13,82 @@ const toRenderableText = (value) => {
   return String(value)
 }
 
+const TRANSPORT_LABELS = {
+  train: 'Trains',
+  flight: 'Flights',
+  bus: 'Buses',
+  car: 'Car rentals',
+}
+
+const TRANSPORT_ICONS = {
+  train: '🚆',
+  flight: '✈️',
+  bus: '🚌',
+  car: '🚗',
+}
+
+function TransportSection({ transport }) {
+  const legs = Object.entries(transport?.legs || {})
+    .filter(([, leg]) => leg)
+    .map(([mode, leg]) => ({ mode, ...leg }))
+  if (!legs.length) return null
+
+  return (
+    <div className="transport-section">
+      <h2>Getting there</h2>
+      <p className="transport-route">
+        {toRenderableText(transport.from)} → {toRenderableText(transport.to)}
+        {transport.date ? ` · ${toRenderableText(transport.date)}` : ''}
+      </p>
+      <div className="transport-grid">
+        {legs.map((leg) => (
+          <div key={leg.mode} className="transport-card">
+            <div className="transport-card-header">
+              <span className="transport-icon">{TRANSPORT_ICONS[leg.mode] || '🧭'}</span>
+              <h3>{TRANSPORT_LABELS[leg.mode] || leg.mode}</h3>
+            </div>
+            {leg.options?.length > 0 ? (
+              <ul className="transport-options">
+                {leg.options.map((option, index) => (
+                  <li key={`${leg.mode}-${index}`}>
+                    <div className="transport-option-head">
+                      <strong>{toRenderableText(option.title)}</strong>
+                      {option.price ? (
+                        <span className="transport-price">{toRenderableText(option.price)}</span>
+                      ) : null}
+                    </div>
+                    {option.subtitle ? (
+                      <span className="transport-subtitle">{toRenderableText(option.subtitle)}</span>
+                    ) : null}
+                    <div className="transport-meta">
+                      {option.depart && (
+                        <span>
+                          {toRenderableText(option.depart)}
+                          {option.from ? ` · ${toRenderableText(option.from)}` : ''}
+                        </span>
+                      )}
+                      {option.arrive && (
+                        <span>
+                          {toRenderableText(option.arrive)}
+                          {option.to ? ` · ${toRenderableText(option.to)}` : ''}
+                        </span>
+                      )}
+                      {option.duration && <span>{toRenderableText(option.duration)}</span>}
+                      {option.meta && <span>{toRenderableText(option.meta)}</span>}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="transport-empty">{toRenderableText(leg.error) || 'No options found.'}</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function App() {
   const [formData, setFormData] = useState({
     from_location: '',
@@ -334,6 +410,8 @@ function App() {
           ) : (
             <h2>Trip Plan</h2>
           )}
+
+          {result.transport && <TransportSection transport={result.transport} />}
 
           {result.result && (
             <details className="raw-result">

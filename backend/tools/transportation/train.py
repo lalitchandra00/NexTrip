@@ -49,6 +49,45 @@ class TrainAPI:
         return result.get("data", [])
 
 
+def _rank_stations(stations: List[Dict[str, Any]], query: str) -> List[Dict[str, Any]]:
+    """Prefer major, well-named stations over obscure nearby halts."""
+    needle = (query or "").strip().lower()
+
+    def score(station: Dict[str, Any]) -> float:
+        name = (station.get("display_name_en") or "").lower()
+        value = 0.0
+        if needle and name == needle:
+            value += 100
+        if needle and (name.startswith(needle) or name.endswith(needle)):
+            value += 20
+        if needle and needle in name:
+            value += 10
+        for keyword, weight in (
+            ("junction", 8),
+            ("jn", 8),
+            ("central", 6),
+            ("terminus", 6),
+            ("isbt", 6),
+            ("new ", 3),
+        ):
+            if keyword in name:
+                value += weight
+        for keyword in ("airport", "metro", "halt", "cabinet", "secretariat"):
+            if keyword in name:
+                value -= 20
+        return value
+
+    return sorted(stations, key=score, reverse=True)
+
+
+def _station_code(station: Dict[str, Any]) -> Optional[str]:
+    return (
+        station.get("code_current")
+        or station.get("station_code")
+        or station.get("code")
+    )
+
+
 def search_trains_tool(from_location: str, to_location: str,
                        from_lat: Optional[float] = None, from_lon: Optional[float] = None,
                        to_lat: Optional[float] = None, to_lon: Optional[float] = None) -> Dict[str, Any]:
@@ -65,22 +104,36 @@ def search_trains_tool(from_location: str, to_location: str,
     if not from_stations or not to_stations:
         return {"error": "Could not find stations for one or both locations"}
 
-    # Use first/closest station codes
-    from_station = from_stations[0]
-    to_station = to_stations[0]
-    from_code = from_station.get("code_current") or from_station.get("station_code") or from_station.get("code")
-    to_code = to_station.get("code_current") or to_station.get("station_code") or to_station.get("code")
+    from_stations = _rank_stations(from_stations, from_location)
+    to_stations = _rank_stations(to_stations, to_location)
 
-    if not from_code or not to_code:
-        return {"error": "Could not extract station codes", "from_stations": from_stations, "to_stations": to_stations}
-
-    # Get trains
-    trains = train_api.get_trains_between_stations(from_code, to_code)
+    # Try the best-looking station pairs until one returns trains.
+    trains: Dict[str, Any] = {}
+    used_from = from_stations[0]
+    used_to = to_stations[0]
+    for from_station in from_stations[:2]:
+        from_code = _station_code(from_station)
+        if not from_code:
+            continue
+        for to_station in to_stations[:2]:
+            to_code = _station_code(to_station)
+            if not to_code:
+                continue
+            candidate = train_api.get_trains_between_stations(from_code, to_code)
+            if candidate.get("data"):
+                trains = candidate
+                used_from = from_station
+                used_to = to_station
+                break
+            if not trains:
+                trains = candidate
+        if trains.get("data"):
+            break
 
     return {
-        "from_stations": from_stations,
-        "to_stations": to_stations,
-        "trains": trains
+        "from_stations": [used_from],
+        "to_stations": [used_to],
+        "trains": trains or {"data": []}
     }
 
 

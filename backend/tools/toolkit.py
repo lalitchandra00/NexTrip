@@ -56,6 +56,16 @@ class NexTripToolkit:
         return tools
 
 
+def get_agent_tools() -> List:
+    """Tools used by the planning agent; transport is fetched separately."""
+    tools = []
+    tools.extend(NexTripToolkit.get_places_tools())
+    tools.extend(NexTripToolkit.get_hotel_tools())
+    tools.extend(NexTripToolkit.get_rental_tools())
+    tools.extend(NexTripToolkit.get_weather_tools())
+    return tools
+
+
 def get_all_tools():
     return NexTripToolkit.get_all_tools()
 

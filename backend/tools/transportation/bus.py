@@ -49,25 +49,55 @@ def _to_bus_date(value: str) -> str:
         return value
 
 
-def _first_station(result: Any) -> Dict[str, Any]:
+def _station_candidates(result: Any) -> List[Dict[str, Any]]:
     if isinstance(result, list):
-        return result[0] if result else {}
+        return [item for item in result if isinstance(item, dict)]
     if isinstance(result, dict):
         for key in ("data", "stations", "results", "cities"):
             value = result.get(key)
-            if isinstance(value, list) and value:
-                return value[0]
+            if isinstance(value, list):
+                return [item for item in value if isinstance(item, dict)]
             if isinstance(value, dict):
-                return value
-        return result
-    return {}
+                return [value]
+        return [result]
+    return []
 
 
-def search_buses_tool(from_location: str, to_location: str, travel_date: str, adult: int = 1) -> Dict[str, Any]:
+def _pick_station(result: Any, query: str, country_code: str = "in") -> Dict[str, Any]:
+    stations = _station_candidates(result)
+    if not stations:
+        return {}
+
+    needle = (query or "").strip().lower()
+
+    def score(station: Dict[str, Any]) -> float:
+        name = (station.get("name") or "").lower()
+        country = ((station.get("country") or {}).get("code") or "").lower()
+        value = float(station.get("score") or 0)
+        if country_code and country == country_code.lower():
+            value += 1000
+        if needle and name.startswith(needle):
+            value += 100
+        elif needle and needle in name:
+            value += 50
+        for keyword, weight in (("isbt", 20), ("terminal", 10), ("central", 10)):
+            if keyword in name:
+                value += weight
+        return value
+
+    return max(stations, key=score)
+
+
+def search_buses_tool(from_location: str, to_location: str, travel_date: str,
+                      adult: int = 1, country_code: str = "in") -> Dict[str, Any]:
     """Tool to search buses between locations."""
     bus_api = BusAPI()
-    from_station = _first_station(bus_api.autocomplete_stations(from_location))
-    to_station = _first_station(bus_api.autocomplete_stations(to_location))
+    from_station = _pick_station(
+        bus_api.autocomplete_stations(from_location), from_location, country_code
+    )
+    to_station = _pick_station(
+        bus_api.autocomplete_stations(to_location), to_location, country_code
+    )
 
     if not from_station or not to_station:
         return {"error": "Could not find bus stations"}

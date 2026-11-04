@@ -51,4 +51,5 @@ class TripResponse(BaseModel):
     status: str
     result: Any = None
     itinerary: Optional[ItineraryPlan] = None
+    transport: Any = None
     error: Optional[str] = None

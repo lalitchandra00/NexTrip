@@ -8,6 +8,7 @@ from schemas import TripRequest, TripResponse
 from agents.trip_agent import create_nextrip_agent
 from llm_config import model_names
 from tools.places.itinerary import build_places_itinerary
+from tools.transportation.summary import build_transport_summary
 
 load_dotenv()
 
@@ -49,7 +50,7 @@ async def plan_trip(request: TripRequest):
             f"Then make a {request.num_days}-day plan that assigns the places to each day, "
             "grouping nearby places together"
         )
-        query_parts.append("Find transportation options (trains/flights/buses) and weather information")
+        query_parts.append("Find weather information; transportation is handled separately")
         
         query = ". ".join(query_parts) + "."
         timeout = float(os.getenv("PLAN_TRIP_TIMEOUT", "120"))
@@ -84,11 +85,33 @@ async def plan_trip(request: TripRequest):
             except Exception:
                 return None
 
-        result, itinerary = await asyncio.gather(
-            run_agent(), run_itinerary(), return_exceptions=True
+        async def run_transport():
+            try:
+                return await asyncio.wait_for(
+                    asyncio.to_thread(
+                        build_transport_summary,
+                        request.from_location,
+                        request.to_location,
+                        request.travel_date,
+                        request.num_days,
+                        request.return_date,
+                        request.adults,
+                        request.cabin_class,
+                        request.include_rentals,
+                        request.country_of_residence,
+                    ),
+                    timeout=itinerary_timeout,
+                )
+            except Exception:
+                return None
+
+        result, itinerary, transport = await asyncio.gather(
+            run_agent(), run_itinerary(), run_transport(), return_exceptions=True
         )
         if isinstance(itinerary, Exception):
             itinerary = None
+        if isinstance(transport, Exception):
+            transport = None
 
         if isinstance(result, Exception):
             message = "Agent timed out" if isinstance(result, asyncio.TimeoutError) else str(result)
@@ -96,9 +119,15 @@ async def plan_trip(request: TripRequest):
                 status="partial",
                 result={"error": message},
                 itinerary=itinerary,
+                transport=transport,
                 error=message,
             )
 
-        return TripResponse(status="success", result=result, itinerary=itinerary)
+        return TripResponse(
+            status="success",
+            result=result,
+            itinerary=itinerary,
+            transport=transport,
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
