@@ -2,6 +2,10 @@
 
 NexTrip is an AI-powered trip planner that helps travelers explore and organize a journey from one place to another.
 
+## Documentation
+
+- [Backend README](./backend/README.md) — backend architecture, setup, configuration, and execution
+
 ## What NexTrip Does
 
 NexTrip brings together the information a traveler needs when planning a trip:
@@ -25,5 +29,3 @@ The planner accepts a starting location, destination, and travel details, then p
 5. Choose whether to include hotels and car rentals.
 6. Submit the request to receive transportation, a day-by-day places itinerary, accommodation, rental, and weather information.
 
-
-### Backend - [Backend Readme](https://github.com/lalitchandra00/NexTrip/blob/main/backend/README.md)
