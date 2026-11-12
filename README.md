@@ -24,3 +24,6 @@ The planner accepts a starting location, destination, and travel details, then p
 4. Select a cabin class and display currency.
 5. Choose whether to include hotels and car rentals.
 6. Submit the request to receive transportation, a day-by-day places itinerary, accommodation, rental, and weather information.
+
+
+### Backend - [Backend Readme](https://github.com/lalitchandra00/NexTrip/blob/main/backend/README.md)
